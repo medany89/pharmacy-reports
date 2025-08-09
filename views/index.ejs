@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-primary mb-4">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-chart-bar me-2"></i>
+                تقارير الصيدلية
+            </span>
+            <div class="navbar-nav">
+                <button class="btn btn-light btn-sm" onclick="refreshReports()">
+                    <i class="fas fa-sync-alt"></i>
+                    تحديث
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- أفضل 3 صيدليات -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h3 class="card-title mb-0">
+                            <i class="fas fa-trophy me-2"></i>
+                            أفضل 3 صيدليات
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="top3Container">
+                            <% if (top3 && top3.length > 0) { %>
+                                <% top3.forEach((pharmacy, index) => { %>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card h-100 border-<%= index === 0 ? 'warning' : index === 1 ? 'secondary' : 'info' %>">
+                                            <div class="card-body text-center">
+                                                <div class="position-relative">
+                                                    <% if (index === 0) { %>
+                                                        <i class="fas fa-crown text-warning fa-2x mb-2"></i>
+                                                    <% } else if (index === 1) { %>
+                                                        <i class="fas fa-medal text-secondary fa-2x mb-2"></i>
+                                                    <% } else { %>
+                                                        <i class="fas fa-award text-info fa-2x mb-2"></i>
+                                                    <% } %>
+                                                </div>
+                                                <h5 class="card-title text-<%= index === 0 ? 'warning' : index === 1 ? 'secondary' : 'info' %>">
+                                                    المركز <%= index + 1 %>
+                                                </h5>
+                                                <h6 class="card-subtitle mb-2 text-muted"><%= pharmacy.pharmacy_name %></h6>
+                                                <p class="card-text">
+                                                    <strong>الهدف:</strong> <%= Number(pharmacy.target_amount).toLocaleString('ar-EG') %> جنيه<br>
+                                                    <strong>الدخل الفعلي:</strong> <%= Number(pharmacy.actual_income).toLocaleString('ar-EG') %> جنيه
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            <% } else { %>
+                                <div class="col-12">
+                                    <div class="alert alert-info text-center">
+                                        لا توجد بيانات متاحة حالياً
+                                    </div>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الصيدليات المتفوقة -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="card-title mb-0">
+                            <i class="fas fa-star me-2"></i>
+                            الصيدليات المتفوقة (حققت الهدف)
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="topPerformingTable">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th>اسم الصيدلية</th>
+                                        <th>الهدف المالي</th>
+                                        <th>الدخل الفعلي</th>
+                                        <th>الفائض عن الهدف</th>
+                                        <th>نسبة التحقيق %</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (topPerforming && topPerforming.length > 0) { %>
+                                        <% topPerforming.forEach((pharmacy) => { %>
+                                            <tr>
+                                                <td><strong><%= pharmacy.pharmacy_name %></strong></td>
+                                                <td><%= Number(pharmacy.target_amount).toLocaleString('ar-EG') %> جنيه</td>
+                                                <td class="text-success"><%= Number(pharmacy.actual_income).toLocaleString('ar-EG') %> جنيه</td>
+                                                <td class="text-success">+<%= Number(pharmacy.excess_amount).toLocaleString('ar-EG') %> جنيه</td>
+                                                <td>
+                                                    <span class="badge bg-success fs-6">
+                                                        <%= Number(pharmacy.achievement_percentage).toFixed(1) %>%
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted">
+                                                لا توجد صيدليات حققت الهدف حتى الآن
+                                            </td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- جميع الصيدليات -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <h3 class="card-title mb-0">
+                            <i class="fas fa-list me-2"></i>
+                            الأداء المالي لجميع الصيدليات
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="allPharmaciesTable">
+                                <thead class="table-info">
+                                    <tr>
+                                        <th>اسم الصيدلية</th>
+                                        <th>الهدف المالي</th>
+                                        <th>الدخل الفعلي</th>
+                                        <th>عدد الطلبات</th>
+                                        <th>نسبة الإنجاز</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (allPharmacies && allPharmacies.length > 0) { %>
+                                        <% allPharmacies.forEach((pharmacy) => { %>
+                                            <% const achievementPercentage = pharmacy.target_amount > 0 ? (pharmacy.actual_income * 100 / pharmacy.target_amount) : 0; %>
+                                            <tr>
+                                                <td><strong><%= pharmacy.pharmacy_name %></strong></td>
+                                                <td><%= Number(pharmacy.target_amount).toLocaleString('ar-EG') %> جنيه</td>
+                                                <td class="<%= achievementPercentage >= 100 ? 'text-success' : achievementPercentage >= 75 ? 'text-warning' : 'text-danger' %>">
+                                                    <%= Number(pharmacy.actual_income).toLocaleString('ar-EG') %> جنيه
+                                                </td>
+                                                <td><%= pharmacy.total_orders %> طلب</td>
+                                                <td>
+                                                    <div class="progress" style="height: 25px;">
+                                                        <div class="progress-bar bg-<%= achievementPercentage >= 100 ? 'success' : achievementPercentage >= 75 ? 'warning' : 'danger' %>" 
+                                                             role="progressbar" 
+                                                             style="width: <%= Math.min(achievementPercentage, 100) + '%' %>" 
+                                                             aria-valuenow="<%= achievementPercentage %>" 
+                                                             aria-valuemin="0" 
+                                                             aria-valuemax="100">
+                                                            <%= Number(achievementPercentage).toFixed(1) %>%
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted">
+                                                لا توجد بيانات متاحة
+                                            </td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-light text-center py-3 mt-5">
+        <p class="text-muted mb-0">&copy; 2025 تقارير الصيدلية. جميع الحقوق محفوظة.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>
