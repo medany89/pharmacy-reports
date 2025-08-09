@@ -1,8 +1,16 @@
+const sql = require('mssql');
+// إعدادات الاتصال بقاعدة البيانات
+
+
 const config = {
     user: process.env.DB_USER || 'your_username',
     password: process.env.DB_PASSWORD || 'your_password',
     server: process.env.DB_SERVER || 'localhost',
     database: process.env.DB_NAME || 'your_database_name',
+    // user: 'db24838',                    // أو اسم المستخدم الخاص بك
+    // password: 'sF?8C9j+y#4H',     // كلمة مرور SQL Server
+    // server: 'db24838.public.databaseasp.net',           // أو IP الخادم
+    // database: 'db24838',       // اسم قاعدة البيانات
     options: {
         encrypt: process.env.NODE_ENV === 'production', // true للإنتاج
         trustServerCertificate: true,
