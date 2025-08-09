@@ -1,16 +1,10 @@
-
-
-
-// config/database.js
-const sql = require('mssql');
-
 const config = {
-    user: 'userName',                    // أو اسم المستخدم الخاص بك
-    password: 'password',     // كلمة مرور SQL Server
-    server: 'server',           // أو IP الخادم
-    database: 'DbName',       // اسم قاعدة البيانات
+    user: process.env.DB_USER || 'your_username',
+    password: process.env.DB_PASSWORD || 'your_password',
+    server: process.env.DB_SERVER || 'localhost',
+    database: process.env.DB_NAME || 'your_database_name',
     options: {
-        encrypt: false,
+        encrypt: process.env.NODE_ENV === 'production', // true للإنتاج
         trustServerCertificate: true,
         enableArithAbort: true
     },
@@ -30,11 +24,19 @@ const getConnection = async () => {
         if (!poolPromise) {
             poolPromise = new sql.ConnectionPool(config);
             await poolPromise.connect();
-            console.log('تم الاتصال بقاعدة البيانات بنجاح');
+            console.log('✅ تم الاتصال بقاعدة البيانات بنجاح');
         }
         return poolPromise;
     } catch (error) {
-        console.error('خطأ في الاتصال بقاعدة البيانات:', error);
+        console.error('❌ خطأ في الاتصال بقاعدة البيانات:', error.message);
+        
+        // في حالة فشل الاتصال، اظهر رسالة واضحة
+        if (error.code === 'ELOGIN') {
+            console.error('تحقق من اسم المستخدم وكلمة المرور');
+        } else if (error.code === 'ESOCKET') {
+            console.error('تحقق من عنوان الخادم والشبكة');
+        }
+        
         throw error;
     }
 };
